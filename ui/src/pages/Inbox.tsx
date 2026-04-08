@@ -16,6 +16,7 @@ import { projectsApi } from "../api/projects";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useGeneralSettings } from "../context/GeneralSettingsContext";
+import { useLanguage } from "../context/LanguageContext";
 import { queryKeys } from "../lib/queryKeys";
 import {
   armIssueDetailInboxQuickArchive,
@@ -386,6 +387,7 @@ export function FailedRunInboxRow({
   selected?: boolean;
   className?: string;
 }) {
+  const { t } = useLanguage();
   const issueId = readIssueIdFromRun(run);
   const issue = issueId ? issueById.get(issueId) ?? null : null;
   const displayError = runFailureMessage(run);
@@ -453,7 +455,7 @@ export function FailedRunInboxRow({
                   {issue.title}
                 </>
               ) : (
-                <>Failed run{linkedAgentName ? ` — ${linkedAgentName}` : ""}</>
+                <>{t("inbox.failedRun")}{linkedAgentName ? ` — ${linkedAgentName}` : ""}</>
               )}
             </span>
             <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
@@ -474,7 +476,7 @@ export function FailedRunInboxRow({
             disabled={isRetrying}
           >
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-            {isRetrying ? "Retrying…" : "Retry"}
+            {isRetrying ? t("inbox.retrying") : t("inbox.retry")}
           </Button>
           {!showUnreadSlot && (
             <button
@@ -788,6 +790,7 @@ function JoinRequestInboxRow({
 export function Inbox() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -847,8 +850,8 @@ export function Inbox() {
   });
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Inbox" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: t("nav.inbox") }]);
+  }, [setBreadcrumbs, t]);
 
   useEffect(() => {
     saveLastInboxTab(tab);
@@ -1572,14 +1575,14 @@ export function Inbox() {
             items={[
               {
                 value: "mine",
-                label: "Mine",
+                label: t("inbox.mine"),
               },
               {
                 value: "recent",
-                label: "Recent",
+                label: t("inbox.recent"),
               },
-              { value: "unread", label: "Unread" },
-              { value: "all", label: "All" },
+              { value: "unread", label: t("inbox.unread") },
+              { value: "all", label: t("inbox.all") },
             ]}
           />
         </Tabs>
@@ -1589,7 +1592,7 @@ export function Inbox() {
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search inbox…"
+              placeholder={t("placeholder.searchInbox")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-8 w-[180px] pl-8 text-xs sm:w-[220px]"
@@ -1604,17 +1607,17 @@ export function Inbox() {
                 className="h-8 shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground"
               >
                 <Columns3 className="mr-1 h-3.5 w-3.5" />
-                Show / hide columns
+                {t("btn.showHideColumns")}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[300px] rounded-xl border-border/70 p-1.5 shadow-xl shadow-black/10">
               <DropdownMenuLabel className="px-2 pb-1 pt-1.5">
                 <div className="space-y-1">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                    Desktop issue rows
+                    {t("label.desktopIssueRows")}
                   </div>
                   <div className="text-sm font-medium text-foreground">
-                    Choose which inbox columns stay visible
+                    {t("label.chooseVisibleColumns")}
                   </div>
                 </div>
               </DropdownMenuLabel>
@@ -1642,7 +1645,7 @@ export function Inbox() {
                 onSelect={() => setIssueColumns(DEFAULT_INBOX_ISSUE_COLUMNS)}
                 className="rounded-lg px-3 py-2 text-sm"
               >
-                Reset defaults
+                {t("btn.resetDefaults")}
                 <span className="ml-auto text-xs text-muted-foreground">status, id, updated</span>
               </DropdownMenuItem>
             </DropdownMenuContent>

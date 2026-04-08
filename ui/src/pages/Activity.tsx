@@ -7,6 +7,7 @@ import { projectsApi } from "../api/projects";
 import { goalsApi } from "../api/goals";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
+import { useLanguage } from "../context/LanguageContext";
 import { queryKeys } from "../lib/queryKeys";
 import { EmptyState } from "../components/EmptyState";
 import { ActivityRow } from "../components/ActivityRow";
@@ -21,14 +22,20 @@ import {
 import { History } from "lucide-react";
 import type { Agent } from "@paperclipai/shared";
 
+/**
+ * 活动页面组件
+ * @author <smallletters@sina.com>
+ * @date 2026-04-07
+ */
 export function Activity() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const [filter, setFilter] = useState("all");
+  const { t } = useLanguage();
+  const [filter, setFilter] = useState<string>("all");
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Activity" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: t("page.activity.title") }]);
+  }, [setBreadcrumbs, t]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.activity(selectedCompanyId!),
@@ -82,11 +89,24 @@ export function Activity() {
   }, [issues]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={History} message="Select a company to view activity." />;
+    return <EmptyState icon={History} message={t("page.activity.selectCompany")} />;
   }
 
   if (isLoading) {
     return <PageSkeleton variant="list" />;
+  }
+
+  if (error) {
+    return (
+      <EmptyState
+        icon={History}
+        message={error instanceof Error ? error.message : t("error.loadFailed")}
+      />
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return <EmptyState icon={History} message={t("page.activity.noActivity")} />;
   }
 
   const filtered =
@@ -101,25 +121,26 @@ export function Activity() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end">
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-[140px] h-8 text-xs">
-            <SelectValue placeholder="Filter by type" />
+        <Select value={filter} onValueChange={(value) => setFilter(value)}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder={t("label.filterByType")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
-            {entityTypes.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </SelectItem>
-            ))}
+            <SelectItem value="all">{t("label.allTypes")}</SelectItem>
+            <SelectItem value="issue">{t("entity.issue")}</SelectItem>
+            <SelectItem value="agent">{t("entity.agent")}</SelectItem>
+            <SelectItem value="project">{t("entity.project")}</SelectItem>
+            <SelectItem value="company">{t("entity.company")}</SelectItem>
+            <SelectItem value="goal">{t("entity.goal")}</SelectItem>
+            <SelectItem value="budget">{t("entity.budget")}</SelectItem>
+            <SelectItem value="approval">{t("entity.approval")}</SelectItem>
+            <SelectItem value="cost">{t("entity.cost")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
-
       {filtered && filtered.length === 0 && (
-        <EmptyState icon={History} message="No activity yet." />
+        <EmptyState icon={History} message={t("page.activity.noActivity")} />
       )}
 
       {filtered && filtered.length > 0 && (

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { pickTextColorForPillBg } from "@/lib/color-contrast";
 import { useDialog } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
+import { useLanguage } from "../context/LanguageContext";
 import { issuesApi } from "../api/issues";
 import { authApi } from "../api/auth";
 import { queryKeys } from "../lib/queryKeys";
@@ -203,6 +204,7 @@ export function IssuesList({
 }: IssuesListProps) {
   const { selectedCompanyId } = useCompany();
   const { openNewIssue } = useDialog();
+  const { t } = useLanguage();
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
@@ -573,7 +575,7 @@ export function IssuesList({
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Button size="sm" variant="outline" onClick={() => openNewIssue(newIssueDefaults())}>
             <Plus className="h-4 w-4 sm:mr-1" />
-            <span className="hidden sm:inline">New Issue</span>
+            <span className="hidden sm:inline">{t("btn.newIssue")}</span>
           </Button>
           <div className="relative w-48 sm:w-64 md:w-80">
             <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -583,9 +585,9 @@ export function IssuesList({
                 setIssueSearch(e.target.value);
                 onSearchChange?.(e.target.value);
               }}
-              placeholder="Search issues..."
+              placeholder={t("placeholder.searchIssues")}
               className="pl-7 text-xs sm:text-sm"
-              aria-label="Search issues"
+              aria-label={t("placeholder.searchIssues")}
             />
           </div>
         </div>
@@ -614,7 +616,7 @@ export function IssuesList({
             <PopoverTrigger asChild>
               <Button variant="ghost" size="sm" className={`text-xs ${activeFilterCount > 0 ? "text-blue-600 dark:text-blue-400" : ""}`}>
                 <Filter className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                <span className="hidden sm:inline">{activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : "Filter"}</span>
+                <span className="hidden sm:inline">{activeFilterCount > 0 ? `${t("label.filters")}: ${activeFilterCount}` : t("label.filter")}</span>
                 {activeFilterCount > 0 && (
                   <span className="sm:hidden text-[10px] font-medium ml-0.5">{activeFilterCount}</span>
                 )}
@@ -632,20 +634,20 @@ export function IssuesList({
             <PopoverContent align="end" className="w-[min(480px,calc(100vw-2rem))] p-0">
               <div className="p-3 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Filters</span>
+                  <span className="text-sm font-medium">{t("label.filters")}</span>
                   {activeFilterCount > 0 && (
                     <button
                       className="text-xs text-muted-foreground hover:text-foreground"
                       onClick={() => updateView({ statuses: [], priorities: [], assignees: [], labels: [] })}
                     >
-                      Clear
+                      {t("btn.clear")}
                     </button>
                   )}
                 </div>
 
                 {/* Quick filters */}
                 <div className="space-y-1.5">
-                  <span className="text-xs text-muted-foreground">Quick filters</span>
+                  <span className="text-xs text-muted-foreground">{t("label.quickFilters")}</span>
                   <div className="flex flex-wrap gap-1.5">
                     {quickFilterPresets.map((preset) => {
                       const isActive = arraysEqual(viewState.statuses, preset.statuses);
@@ -785,17 +787,17 @@ export function IssuesList({
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-xs">
                   <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                  <span className="hidden sm:inline">Sort</span>
+                  <span className="hidden sm:inline">{t("label.sort")}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-48 p-0">
                 <div className="p-2 space-y-0.5">
                   {([
-                    ["status", "Status"],
-                    ["priority", "Priority"],
-                    ["title", "Title"],
-                    ["created", "Created"],
-                    ["updated", "Updated"],
+                    ["status", t("field.status")],
+                    ["priority", t("field.priority")],
+                    ["title", t("field.title")],
+                    ["created", t("field.created")],
+                    ["updated", t("field.updated")],
                   ] as const).map(([field, label]) => (
                     <button
                       key={field}
@@ -829,16 +831,16 @@ export function IssuesList({
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-xs">
                   <Layers className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                  <span className="hidden sm:inline">Group</span>
+                  <span className="hidden sm:inline">{t("label.group")}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-44 p-0">
                 <div className="p-2 space-y-0.5">
                   {([
-                    ["status", "Status"],
-                    ["priority", "Priority"],
-                    ["assignee", "Assignee"],
-                    ["none", "None"],
+                    ["status", t("field.status")],
+                    ["priority", t("field.priority")],
+                    ["assignee", t("field.assignee")],
+                    ["none", t("field.none")],
                   ] as const).map(([value, label]) => (
                     <button
                       key={value}
@@ -864,8 +866,8 @@ export function IssuesList({
       {!isLoading && filtered.length === 0 && viewState.viewMode === "list" && (
         <EmptyState
           icon={CircleDot}
-          message="No issues match the current filters or search."
-          action="Create Issue"
+          message={t("empty.noIssuesMatch")}
+          action={t("btn.createIssue")}
           onAction={() => openNewIssue(newIssueDefaults())}
         />
       )}

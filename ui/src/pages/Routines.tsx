@@ -11,6 +11,7 @@ import { heartbeatsApi } from "../api/heartbeats";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToast } from "../context/ToastContext";
+import { useLanguage } from "../context/LanguageContext";
 import { queryKeys } from "../lib/queryKeys";
 import { groupBy } from "../lib/groupBy";
 import { createIssueDetailLocationState } from "../lib/issueDetailBreadcrumb";
@@ -122,7 +123,9 @@ export function buildRoutineGroups(
   groupByValue: RoutineGroupBy,
   projectById: Map<string, { name: string }>,
   agentById: Map<string, { name: string }>,
+  t?: (key: string) => string,
 ): RoutineGroup[] {
+  const _t = t ?? ((key: string) => key);
   if (groupByValue === "none") {
     return [{ key: "__all", label: null, items: routines }];
   }
@@ -131,13 +134,13 @@ export function buildRoutineGroups(
     const groups = groupBy(routines, (routine) => routine.projectId ?? "__no_project");
     return Object.keys(groups)
       .sort((left, right) => {
-        const leftLabel = left === "__no_project" ? "No project" : (projectById.get(left)?.name ?? "Unknown project");
-        const rightLabel = right === "__no_project" ? "No project" : (projectById.get(right)?.name ?? "Unknown project");
+        const leftLabel = left === "__no_project" ? _t("page.routines.noProject") : (projectById.get(left)?.name ?? _t("page.routines.unknownProject"));
+        const rightLabel = right === "__no_project" ? _t("page.routines.noProject") : (projectById.get(right)?.name ?? _t("page.routines.unknownProject"));
         return leftLabel.localeCompare(rightLabel);
       })
       .map((key) => ({
         key,
-        label: key === "__no_project" ? "No project" : (projectById.get(key)?.name ?? "Unknown project"),
+        label: key === "__no_project" ? _t("page.routines.noProject") : (projectById.get(key)?.name ?? _t("page.routines.unknownProject")),
         items: groups[key]!,
       }));
   }
@@ -145,13 +148,13 @@ export function buildRoutineGroups(
   const groups = groupBy(routines, (routine) => routine.assigneeAgentId ?? "__unassigned");
   return Object.keys(groups)
     .sort((left, right) => {
-      const leftLabel = left === "__unassigned" ? "Unassigned" : (agentById.get(left)?.name ?? "Unknown agent");
-      const rightLabel = right === "__unassigned" ? "Unassigned" : (agentById.get(right)?.name ?? "Unknown agent");
+      const leftLabel = left === "__unassigned" ? _t("page.routines.unassigned") : (agentById.get(left)?.name ?? _t("page.routines.unknownAgent"));
+      const rightLabel = right === "__unassigned" ? _t("page.routines.unassigned") : (agentById.get(right)?.name ?? _t("page.routines.unknownAgent"));
       return leftLabel.localeCompare(rightLabel);
     })
     .map((key) => ({
       key,
-      label: key === "__unassigned" ? "Unassigned" : (agentById.get(key)?.name ?? "Unknown agent"),
+      label: key === "__unassigned" ? _t("page.routines.unassigned") : (agentById.get(key)?.name ?? _t("page.routines.unknownAgent")),
       items: groups[key]!,
     }));
 }
@@ -271,6 +274,7 @@ function RoutineListRow({
 }
 
 export function Routines() {
+  const { t } = useLanguage();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
@@ -312,8 +316,8 @@ export function Routines() {
   const [routineViewState, setRoutineViewState] = useState<RoutineViewState>(() => getRoutineViewState(routineViewStateKey));
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Routines" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: t("nav.routines") }]);
+  }, [setBreadcrumbs, t]);
 
   useEffect(() => {
     setRoutineViewState(getRoutineViewState(routineViewStateKey));
@@ -485,8 +489,8 @@ export function Routines() {
     return ids;
   }, [liveRuns]);
   const routineGroups = useMemo(
-    () => buildRoutineGroups(routines ?? [], routineViewState.groupBy, projectById, agentById),
-    [agentById, projectById, routineViewState.groupBy, routines],
+    () => buildRoutineGroups(routines ?? [], routineViewState.groupBy, projectById, agentById, t),
+    [agentById, projectById, routineViewState.groupBy, routines, t],
   );
   const recentRunsIssueLinkState = useMemo(
     () =>
@@ -557,16 +561,16 @@ export function Routines() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-            Routines
+            {t("page.routines.title")}
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">Beta</span>
           </h1>
           <p className="text-sm text-muted-foreground">
-            Recurring work definitions that materialize into auditable execution issues.
+            {t("page.routines.subtitle")}
           </p>
         </div>
         <Button onClick={() => setComposerOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Create routine
+          {t("btn.createRoutine")}
         </Button>
       </div>
 
@@ -576,28 +580,28 @@ export function Routines() {
           value={activeTab}
           onValueChange={handleTabChange}
           items={[
-            { value: "routines", label: "Routines" },
-            { value: "runs", label: "Recent Runs" },
+            { value: "routines", label: t("nav.routines") },
+            { value: "runs", label: t("nav.recentRuns") },
           ]}
         />
         <TabsContent value="routines" className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">
-              {(routines ?? []).length} routine{(routines ?? []).length === 1 ? "" : "s"}
+              {t("page.routines.count", { count: String((routines ?? []).length) })}
             </p>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-xs">
                   <Layers className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                  <span className="hidden sm:inline">Group</span>
+                  <span className="hidden sm:inline">{t("page.routines.groupBy")}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-44 p-0">
                 <div className="p-2 space-y-0.5">
                   {([
-                    ["project", "Project"],
-                    ["assignee", "Agent"],
-                    ["none", "None"],
+                    ["project", t("label.project")],
+                    ["assignee", t("label.agent")],
+                    ["none", t("label.none")],
                   ] as const).map(([value, label]) => (
                     <button
                       key={value}
@@ -879,7 +883,7 @@ export function Routines() {
                 }
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {createRoutine.isPending ? "Creating..." : "Create routine"}
+                {createRoutine.isPending ? t("btn.creating") : t("btn.createRoutine")}
               </Button>
               {createRoutine.isError ? (
                 <p className="text-sm text-destructive">
@@ -905,7 +909,7 @@ export function Routines() {
             <div className="py-12">
               <EmptyState
                 icon={Repeat}
-                message="No routines yet. Use Create routine to define the first recurring workflow."
+                message={t("page.routines.empty")}
               />
             </div>
           ) : (

@@ -2,6 +2,7 @@ import { Link } from "@/lib/router";
 import { Identity } from "./Identity";
 import { timeAgo } from "../lib/timeAgo";
 import { cn } from "../lib/utils";
+import { useLanguage } from "../context/LanguageContext";
 import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@paperclipai/shared";
 
 const ACTION_VERBS: Record<string, string> = {
@@ -42,6 +43,7 @@ const ACTION_VERBS: Record<string, string> = {
   "company.updated": "updated company",
   "company.archived": "archived",
   "company.budget_updated": "updated budget for",
+  "company.skills_scanned": "scanned company skills",
 };
 
 function humanizeValue(value: unknown): string {
@@ -49,23 +51,61 @@ function humanizeValue(value: unknown): string {
   return value.replace(/_/g, " ");
 }
 
-function formatVerb(action: string, details?: Record<string, unknown> | null): string {
+function formatVerb(action: string, details?: Record<string, unknown> | null, t?: (key: string, params?: Record<string, string>) => string): string {
+  const _t = t ?? ((key: string) => key);
   if (action === "issue.updated" && details) {
     const previous = (details._previous ?? {}) as Record<string, unknown>;
     if (details.status !== undefined) {
       const from = previous.status;
       return from
-        ? `changed status from ${humanizeValue(from)} to ${humanizeValue(details.status)} on`
-        : `changed status to ${humanizeValue(details.status)} on`;
+        ? _t("activity.changedStatusFromTo", { from: humanizeValue(from), to: humanizeValue(details.status) })
+        : _t("activity.changedStatusTo", { to: humanizeValue(details.status) });
     }
     if (details.priority !== undefined) {
       const from = previous.priority;
       return from
-        ? `changed priority from ${humanizeValue(from)} to ${humanizeValue(details.priority)} on`
-        : `changed priority to ${humanizeValue(details.priority)} on`;
+        ? _t("activity.changedPriorityFromTo", { from: humanizeValue(from), to: humanizeValue(details.priority) })
+        : _t("activity.changedPriorityTo", { to: humanizeValue(details.priority) });
     }
   }
-  return ACTION_VERBS[action] ?? action.replace(/[._]/g, " ");
+  const verbKey = ACTION_VERBS[action];
+  if (verbKey) {
+    // Map action to translation key
+    const translationMap: Record<string, string> = {
+      "created": "activity.created",
+      "updated": "activity.updated",
+      "checked out": "activity.checkedOut",
+      "released": "activity.released",
+      "commented on": "activity.commentedOn",
+      "attached file to": "activity.attachedFileTo",
+      "removed attachment from": "activity.removedAttachmentFrom",
+      "created document for": "activity.createdDocumentFor",
+      "updated document on": "activity.updatedDocumentOn",
+      "deleted document from": "activity.deletedDocumentFrom",
+      "commented": "activity.commented",
+      "deleted": "activity.deleted",
+      "paused": "activity.paused",
+      "resumed": "activity.resumed",
+      "terminated": "activity.terminated",
+      "created API key for": "activity.createdApiKeyFor",
+      "updated budget for": "activity.updatedBudgetFor",
+      "reset session for": "activity.resetSessionFor",
+      "invoked heartbeat for": "activity.invokedHeartbeatFor",
+      "cancelled heartbeat for": "activity.cancelledHeartbeatFor",
+      "requested approval": "activity.requestedApproval",
+      "approved": "activity.approved",
+      "rejected": "activity.rejected",
+      "reported cost for": "activity.reportedCostFor",
+      "recorded cost for": "activity.recordedCostFor",
+      "created company": "activity.createdCompany",
+      "updated company": "activity.updatedCompany",
+      "archived": "activity.archived",
+      "scanned company skills": "activity.scannedCompanySkills",
+    };
+    const key = translationMap[verbKey];
+    if (key) return _t(key);
+  }
+  return action.replace(/[._]/g, " ");
 }
 
 function entityLink(entityType: string, entityId: string, name?: string | null): string | null {
@@ -87,8 +127,14 @@ interface ActivityRowProps {
   className?: string;
 }
 
+/**
+ * 活动行组件
+ * @author <smallletters@sina.com>
+ * @date 2026-04-07
+ */
 export function ActivityRow({ event, agentMap, entityNameMap, entityTitleMap, className }: ActivityRowProps) {
-  const verb = formatVerb(event.action, event.details);
+  const { t } = useLanguage();
+  const verb = formatVerb(event.action, event.details, t);
 
   const isHeartbeatEvent = event.entityType === "heartbeat_run";
   const heartbeatAgentId = isHeartbeatEvent
@@ -106,7 +152,7 @@ export function ActivityRow({ event, agentMap, entityNameMap, entityTitleMap, cl
     : entityLink(event.entityType, event.entityId, name);
 
   const actor = event.actorType === "agent" ? agentMap.get(event.actorId) : null;
-  const actorName = actor?.name ?? (event.actorType === "system" ? "System" : event.actorType === "user" ? "Board" : event.actorId || "Unknown");
+  const actorName = actor?.name ?? (event.actorType === "system" ? t("activity.system") : event.actorType === "user" ? t("activity.board") : event.actorId || t("activity.unknown"));
 
   const inner = (
     <div className="flex gap-3">

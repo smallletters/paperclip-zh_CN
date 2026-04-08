@@ -5,6 +5,7 @@ import { ChevronRight, Plus } from "lucide-react";
 import { useCompany } from "../context/CompanyContext";
 import { useDialog } from "../context/DialogContext";
 import { useSidebar } from "../context/SidebarContext";
+import { useLanguage } from "../context/LanguageContext";
 import { agentsApi } from "../api/agents";
 import { authApi } from "../api/auth";
 import { heartbeatsApi } from "../api/heartbeats";
@@ -19,11 +20,18 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import type { Agent } from "@paperclipai/shared";
+
+/**
+ * 侧边栏代理列表组件
+ * @author <smallletters@sina.com>
+ * @date 2026-04-07
+ */
 export function SidebarAgents() {
   const [open, setOpen] = useState(true);
   const { selectedCompanyId } = useCompany();
   const { openNewAgent } = useDialog();
   const { isMobile, setSidebarOpen } = useSidebar();
+  const { t } = useLanguage();
   const location = useLocation();
 
   const { data: agents } = useQuery({
@@ -81,7 +89,7 @@ export function SidebarAgents() {
               )}
             />
             <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
-              Agents
+              {t("section.agents")}
             </span>
           </CollapsibleTrigger>
           <button

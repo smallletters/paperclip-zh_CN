@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Moon, Settings, Sun } from "lucide-react";
+import { BookOpen, Moon, Settings, Sun, Languages } from "lucide-react";
 import { Link, Outlet, useLocation, useNavigate, useParams } from "@/lib/router";
 import { CompanyRail } from "./CompanyRail";
 import { Sidebar } from "./Sidebar";
@@ -22,6 +22,7 @@ import { usePanel } from "../context/PanelContext";
 import { useCompany } from "../context/CompanyContext";
 import { useSidebar } from "../context/SidebarContext";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { useCompanyPageMemory } from "../hooks/useCompanyPageMemory";
 import { healthApi } from "../api/health";
@@ -61,6 +62,7 @@ export function Layout() {
     setSelectedCompanyId,
   } = useCompany();
   const { theme, toggleTheme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
   const { companyPrefix } = useParams<{ companyPrefix: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -311,7 +313,7 @@ export function Layout() {
                   className="flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium transition-colors text-foreground/80 hover:bg-accent/50 hover:text-foreground flex-1 min-w-0"
                 >
                   <BookOpen className="h-4 w-4 shrink-0" />
-                  <span className="truncate">Documentation</span>
+                  <span className="truncate">{t("nav.documentation")}</span>
                 </a>
                 {health?.version && (
                   <Tooltip>
@@ -324,8 +326,8 @@ export function Layout() {
                 <Button variant="ghost" size="icon-sm" className="text-muted-foreground shrink-0" asChild>
                   <Link
                     to={instanceSettingsTarget}
-                    aria-label="Instance settings"
-                    title="Instance settings"
+                    aria-label={t("tooltip.settings")}
+                    title={t("tooltip.settings")}
                     onClick={() => {
                       if (isMobile) setSidebarOpen(false);
                     }}
@@ -338,9 +340,20 @@ export function Layout() {
                   variant="ghost"
                   size="icon-sm"
                   className="text-muted-foreground shrink-0"
+                  onClick={toggleLanguage}
+                  aria-label={t("tooltip.language")}
+                  title={t("tooltip.language")}
+                >
+                  <Languages className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground shrink-0"
                   onClick={toggleTheme}
-                  aria-label={`Switch to ${nextTheme} mode`}
-                  title={`Switch to ${nextTheme} mode`}
+                  aria-label={t("tooltip.theme", { theme: nextTheme })}
+                  title={t("tooltip.theme", { theme: nextTheme })}
                 >
                   {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </Button>
@@ -369,7 +382,7 @@ export function Layout() {
                   className="flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium transition-colors text-foreground/80 hover:bg-accent/50 hover:text-foreground flex-1 min-w-0"
                 >
                   <BookOpen className="h-4 w-4 shrink-0" />
-                  <span className="truncate">Documentation</span>
+                  <span className="truncate">{t("nav.documentation")}</span>
                 </a>
                 {health?.version && (
                   <Tooltip>
@@ -382,8 +395,8 @@ export function Layout() {
                 <Button variant="ghost" size="icon-sm" className="text-muted-foreground shrink-0" asChild>
                   <Link
                     to={instanceSettingsTarget}
-                    aria-label="Instance settings"
-                    title="Instance settings"
+                    aria-label={t("tooltip.settings")}
+                    title={t("tooltip.settings")}
                     onClick={() => {
                       if (isMobile) setSidebarOpen(false);
                     }}
@@ -396,9 +409,20 @@ export function Layout() {
                   variant="ghost"
                   size="icon-sm"
                   className="text-muted-foreground shrink-0"
+                  onClick={toggleLanguage}
+                  aria-label={t("tooltip.language")}
+                  title={t("tooltip.language")}
+                >
+                  <Languages className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground shrink-0"
                   onClick={toggleTheme}
-                  aria-label={`Switch to ${nextTheme} mode`}
-                  title={`Switch to ${nextTheme} mode`}
+                  aria-label={t("tooltip.theme", { theme: nextTheme })}
+                  title={t("tooltip.theme", { theme: nextTheme })}
                 >
                   {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </Button>

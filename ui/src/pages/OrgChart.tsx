@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
+import { useLanguage } from "../context/LanguageContext";
 import { queryKeys } from "../lib/queryKeys";
 import { agentUrl } from "../lib/utils";
 import { Button } from "@/components/ui/button";
@@ -130,9 +131,15 @@ const defaultDotColor = "#a3a3a3";
 
 // ── Main component ──────────────────────────────────────────────────────
 
+/**
+ * 组织架构图页面组件
+ * @author <smallletters@sina.com>
+ * @date 2026-04-07
+ */
 export function OrgChart() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const { data: orgTree, isLoading } = useQuery({
@@ -154,8 +161,8 @@ export function OrgChart() {
   }, [agents]);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Org Chart" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: t("page.orgChart.title") }]);
+  }, [setBreadcrumbs, t]);
 
   // Layout computation
   const layout = useMemo(() => layoutForest(orgTree ?? []), [orgTree]);
@@ -247,7 +254,7 @@ export function OrgChart() {
   }, [zoom, pan]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Network} message="Select a company to view the org chart." />;
+    return <EmptyState icon={Network} message={t("page.orgChart.selectCompany")} />;
   }
 
   if (isLoading) {
@@ -255,7 +262,7 @@ export function OrgChart() {
   }
 
   if (orgTree && orgTree.length === 0) {
-    return <EmptyState icon={Network} message="No organizational hierarchy defined." />;
+    return <EmptyState icon={Network} message={t("page.orgChart.empty")} />;
   }
 
   return (
@@ -264,13 +271,13 @@ export function OrgChart() {
       <Link to="/company/import">
         <Button variant="outline" size="sm">
           <Upload className="mr-1.5 h-3.5 w-3.5" />
-          Import company
+          {t("btn.importCompany")}
         </Button>
       </Link>
       <Link to="/company/export">
         <Button variant="outline" size="sm">
           <Download className="mr-1.5 h-3.5 w-3.5" />
-          Export company
+          {t("btn.exportCompany")}
         </Button>
       </Link>
     </div>
@@ -299,7 +306,7 @@ export function OrgChart() {
             }
             setZoom(newZoom);
           }}
-          aria-label="Zoom in"
+          aria-label={t("btn.zoomIn")}
         >
           +
         </button>
@@ -316,7 +323,7 @@ export function OrgChart() {
             }
             setZoom(newZoom);
           }}
-          aria-label="Zoom out"
+          aria-label={t("btn.zoomOut")}
         >
           &minus;
         </button>
@@ -334,10 +341,10 @@ export function OrgChart() {
             setZoom(fitZoom);
             setPan({ x: (cW - chartW) / 2, y: (cH - chartH) / 2 });
           }}
-          title="Fit to screen"
-          aria-label="Fit chart to screen"
+          title={t("tooltip.fitToScreen")}
+          aria-label={t("tooltip.fitChartToScreen")}
         >
-          Fit
+          {t("btn.fit")}
         </button>
       </div>
 
