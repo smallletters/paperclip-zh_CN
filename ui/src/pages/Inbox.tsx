@@ -214,8 +214,8 @@ export function InboxIssueMetaLeading({
   );
 }
 
-function issueActivityText(issue: Issue): string {
-  return `Updated ${timeAgo(issue.lastActivityAt ?? issue.lastExternalCommentAt ?? issue.updatedAt)}`;
+function issueActivityText(issue: Issue, t: (key: string) => string): string {
+  return `Updated ${timeAgo(issue.lastActivityAt ?? issue.lastExternalCommentAt ?? issue.updatedAt, t)}`;
 }
 
 function issueTrailingGridTemplate(columns: InboxIssueColumn[]): string {
@@ -247,7 +247,8 @@ export function InboxIssueTrailingColumns({
   assigneeName: string | null;
   currentUserId: string | null;
 }) {
-  const activityText = timeAgo(issue.lastActivityAt ?? issue.lastExternalCommentAt ?? issue.updatedAt);
+  const { t } = useLanguage();
+  const activityText = timeAgo(issue.lastActivityAt ?? issue.lastExternalCommentAt ?? issue.updatedAt, t);
   const userLabel = formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? "User";
 
   return (
@@ -462,7 +463,7 @@ export function FailedRunInboxRow({
               <StatusBadge status={run.status} />
               {linkedAgentName && issue ? <span>{linkedAgentName}</span> : null}
               <span className="truncate max-w-[300px]">{displayError}</span>
-              <span>{timeAgo(run.createdAt)}</span>
+              <span>{timeAgo(run.createdAt, t)}</span>
             </span>
           </span>
         </Link>
@@ -542,6 +543,7 @@ function ApprovalInboxRow({
   selected?: boolean;
   className?: string;
 }) {
+  const { t } = useLanguage();
   const Icon = typeIcon[approval.type] ?? defaultTypeIcon;
   const label = approvalLabel(approval.type, approval.payload as Record<string, unknown> | null);
   const showResolutionButtons =
@@ -608,7 +610,7 @@ function ApprovalInboxRow({
             <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
               <span className="capitalize">{approvalStatusLabel(approval.status)}</span>
               {requesterName ? <span>requested by {requesterName}</span> : null}
-              <span>updated {timeAgo(approval.updatedAt)}</span>
+              <span>updated {timeAgo(approval.updatedAt, t)}</span>
             </span>
           </span>
         </Link>
@@ -682,6 +684,7 @@ function JoinRequestInboxRow({
   selected?: boolean;
   className?: string;
 }) {
+  const { t } = useLanguage();
   const label =
     joinRequest.requestType === "human"
       ? "Human join request"
@@ -739,7 +742,7 @@ function JoinRequestInboxRow({
               {label}
             </span>
             <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <span>requested {timeAgo(joinRequest.createdAt)} from IP {joinRequest.requestIp}</span>
+              <span>requested {timeAgo(joinRequest.createdAt, t)} from IP {joinRequest.requestIp}</span>
               {joinRequest.adapterType && <span>adapter: {joinRequest.adapterType}</span>}
             </span>
           </span>
@@ -1919,7 +1922,7 @@ export function Inbox() {
                         showIdentifier={visibleIssueColumnSet.has("id") && availableIssueColumnSet.has("id")}
                       />
                     }
-                    mobileMeta={issueActivityText(issue).toLowerCase()}
+                    mobileMeta={issueActivityText(issue, t).toLowerCase()}
                     unreadState={
                       isUnread ? "visible" : isFading ? "fading" : "hidden"
                     }

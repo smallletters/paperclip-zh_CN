@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Identity } from "./Identity";
 import { approvalLabel, typeIcon, defaultTypeIcon, ApprovalPayloadRenderer } from "./ApprovalPayload";
 import { timeAgo } from "../lib/timeAgo";
+import { useLanguage } from "../context/LanguageContext";
 import type { Approval, Agent } from "@paperclipai/shared";
 
 function statusIcon(status: string) {
@@ -31,6 +32,7 @@ export function ApprovalCard({
   detailLink?: string;
   isPending: boolean;
 }) {
+  const { t } = useLanguage();
   const Icon = typeIcon[approval.type] ?? defaultTypeIcon;
   const label = approvalLabel(approval.type, approval.payload as Record<string, unknown> | null);
   const showResolutionButtons =
@@ -55,7 +57,7 @@ export function ApprovalCard({
         <div className="flex items-center gap-1.5 shrink-0">
           {statusIcon(approval.status)}
           <span className="text-xs text-muted-foreground capitalize">{approval.status}</span>
-          <span className="text-xs text-muted-foreground">· {timeAgo(approval.createdAt)}</span>
+          <span className="text-xs text-muted-foreground">· {timeAgo(approval.createdAt, t)}</span>
         </div>
       </div>
 

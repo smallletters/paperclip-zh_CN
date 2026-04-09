@@ -27,6 +27,7 @@ import { useToast } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
 import { buildRoutineTriggerPatch } from "../lib/routine-trigger-patch";
 import { timeAgo } from "../lib/timeAgo";
+import { useLanguage } from "../context/LanguageContext";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
@@ -248,6 +249,7 @@ export function RoutineDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { pushToast } = useToast();
+  const { t } = useLanguage();
   const hydratedRoutineIdRef = useRef<string | null>(null);
   const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
   const descriptionEditorRef = useRef<MarkdownEditorRef>(null);
@@ -1043,7 +1045,7 @@ export function RoutineDetail() {
                       </Link>
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground shrink-0 ml-2">{timeAgo(run.triggeredAt)}</span>
+                  <span className="text-xs text-muted-foreground shrink-0 ml-2">{timeAgo(run.triggeredAt, t)}</span>
                 </div>
               ))}
             </div>
@@ -1071,7 +1073,7 @@ export function RoutineDetail() {
                       </span>
                     )}
                   </div>
-                  <span className="text-muted-foreground/60 shrink-0">{timeAgo(event.createdAt)}</span>
+                  <span className="text-muted-foreground/60 shrink-0">{timeAgo(event.createdAt, t)}</span>
                 </div>
               ))}
             </div>

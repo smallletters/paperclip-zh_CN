@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { StatusIcon } from "./StatusIcon";
 import { createIssueDetailPath } from "../lib/issueDetailBreadcrumb";
 import { timeAgo } from "../lib/timeAgo";
+import { useLanguage } from "../context/LanguageContext";
 
 interface IssuesQuicklookProps {
   issue: Issue;
@@ -12,6 +13,7 @@ interface IssuesQuicklookProps {
 }
 
 export function IssuesQuicklook({ issue, children }: IssuesQuicklookProps) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
 
   return (
@@ -46,7 +48,7 @@ export function IssuesQuicklook({ issue, children }: IssuesQuicklookProps) {
             <span>·</span>
             <span>{issue.status.replace(/_/g, " ")}</span>
             <span>·</span>
-            <span>{timeAgo(new Date(issue.updatedAt))}</span>
+            <span>{timeAgo(new Date(issue.updatedAt), t)}</span>
           </div>
         </div>
       </PopoverContent>

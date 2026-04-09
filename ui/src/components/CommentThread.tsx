@@ -23,6 +23,7 @@ import { timeAgo } from "../lib/timeAgo";
 import { cn, formatDateTime } from "../lib/utils";
 import { restoreSubmittedCommentDraft } from "../lib/comment-submit-draft";
 import { PluginSlotOutlet } from "@/plugins/slots";
+import { useLanguage } from "../context/LanguageContext";
 
 interface CommentWithRunMeta extends IssueComment {
   runId?: string | null;
@@ -387,6 +388,7 @@ function TimelineEventCard({
   agentMap?: Map<string, Agent>;
   currentUserId?: string | null;
 }) {
+  const { t, relativeTime } = useLanguage();
   const actorName = formatTimelineActorName(event.actorType, event.actorId, agentMap, currentUserId);
 
   return (
@@ -398,19 +400,19 @@ function TimelineEventCard({
       <div className="min-w-0 flex-1 space-y-1.5">
         <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-sm">
           <span className="font-medium text-foreground">{actorName}</span>
-          <span className="text-muted-foreground">updated this task</span>
+          <span className="text-muted-foreground">{t("page.issueDetail.updatedTask")}</span>
           <a
             href={`#activity-${event.id}`}
             className="text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline"
           >
-            {timeAgo(event.createdAt)}
+            {relativeTime(event.createdAt)}
           </a>
         </div>
 
         {event.statusChange ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="w-14 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Status
+              {t("page.issueProperties.status")}
             </span>
             <span className="text-muted-foreground">
               {humanizeValue(event.statusChange.from)}
@@ -425,7 +427,7 @@ function TimelineEventCard({
         {event.assigneeChange ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="w-14 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Assignee
+              {t("page.issueDetail.assignee")}
             </span>
             <span className="text-muted-foreground">
               {formatTimelineAssigneeLabel(event.assigneeChange.from, agentMap, currentUserId)}
@@ -470,8 +472,9 @@ const TimelineList = memo(function TimelineList({
   votingTargetId?: string | null;
   highlightCommentId?: string | null;
 }) {
+  const { t } = useLanguage();
   if (timeline.length === 0) {
-    return <p className="text-sm text-muted-foreground">No timeline entries yet.</p>;
+    return <p className="text-sm text-muted-foreground">{t("page.issueDetail.noTimelineEntries")}</p>;
   }
 
   return (
@@ -516,7 +519,7 @@ const TimelineList = memo(function TimelineList({
                     href={`#run-${run.runId}`}
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline"
                   >
-                    {timeAgo(runTimestamp(run))}
+                    {timeAgo(runTimestamp(run), t)}
                   </a>
                 </div>
               </div>
@@ -572,6 +575,7 @@ export function CommentThread({
   interruptingQueuedRunId = null,
   composerDisabledReason = null,
 }: CommentThreadProps) {
+  const { t } = useLanguage();
   const [body, setBody] = useState("");
   const [reopen, setReopen] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -746,7 +750,7 @@ export function CommentThread({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold">Timeline ({timeline.length + queuedComments.length})</h3>
+      <h3 className="text-sm font-semibold">{t("page.issueDetail.timelineCount", { count: String(timeline.length + queuedComments.length) })}</h3>
 
       <TimelineList
         timeline={timeline}
@@ -768,7 +772,7 @@ export function CommentThread({
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
             <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300">
-              Queued Comments ({queuedComments.length})
+              {t("page.issueDetail.queuedComments", { count: String(queuedComments.length) })}
             </h4>
             {onInterruptQueued && queuedComments[0]?.queueTargetRunId ? (
               <Button
@@ -808,7 +812,7 @@ export function CommentThread({
             ref={editorRef}
             value={body}
             onChange={setBody}
-            placeholder="Leave a comment..."
+            placeholder={t("page.issueDetail.leaveComment")}
             mentions={mentions}
             onSubmit={handleSubmit}
             imageUploadHandler={imageUploadHandler}
@@ -842,20 +846,20 @@ export function CommentThread({
                 onChange={(e) => setReopen(e.target.checked)}
                 className="rounded border-border"
               />
-              Re-open
+              {t("page.issueDetail.reopen")}
             </label>
             {enableReassign && reassignOptions.length > 0 && (
               <InlineEntitySelector
                 value={reassignTarget}
                 options={reassignOptions}
-                placeholder="Assignee"
-                noneLabel="No assignee"
-                searchPlaceholder="Search assignees..."
-                emptyMessage="No assignees found."
+                placeholder={t("page.issueDetail.assignee")}
+                noneLabel={t("newIssue.noAssignee")}
+                searchPlaceholder={t("newIssue.searchAssignees")}
+                emptyMessage={t("newIssue.noAssigneesFound")}
                 onChange={setReassignTarget}
                 className="text-xs h-8"
                 renderTriggerValue={(option) => {
-                  if (!option) return <span className="text-muted-foreground">Assignee</span>;
+                  if (!option) return <span className="text-muted-foreground">{t("page.issueDetail.assignee")}</span>;
                   const agentId = option.id.startsWith("agent:") ? option.id.slice("agent:".length) : null;
                   const agent = agentId ? agentMap?.get(agentId) : null;
                   return (
@@ -883,7 +887,7 @@ export function CommentThread({
               />
             )}
             <Button size="sm" disabled={!canSubmit} onClick={handleSubmit}>
-              {submitting ? "Posting..." : "Comment"}
+              {submitting ? t("btn.posting") : t("page.issueDetail.comment")}
             </Button>
           </div>
         </div>

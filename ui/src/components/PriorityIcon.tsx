@@ -4,12 +4,13 @@ import { cn } from "../lib/utils";
 import { priorityColor, priorityColorDefault } from "../lib/status-colors";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "../context/LanguageContext";
 
-const priorityConfig: Record<string, { icon: typeof ArrowUp; color: string; label: string }> = {
-  critical: { icon: AlertTriangle, color: priorityColor.critical ?? priorityColorDefault, label: "Critical" },
-  high: { icon: ArrowUp, color: priorityColor.high ?? priorityColorDefault, label: "High" },
-  medium: { icon: Minus, color: priorityColor.medium ?? priorityColorDefault, label: "Medium" },
-  low: { icon: ArrowDown, color: priorityColor.low ?? priorityColorDefault, label: "Low" },
+const priorityConfig: Record<string, { icon: typeof ArrowUp; color: string }> = {
+  critical: { icon: AlertTriangle, color: priorityColor.critical ?? priorityColorDefault },
+  high: { icon: ArrowUp, color: priorityColor.high ?? priorityColorDefault },
+  medium: { icon: Minus, color: priorityColor.medium ?? priorityColorDefault },
+  low: { icon: ArrowDown, color: priorityColor.low ?? priorityColorDefault },
 };
 
 const allPriorities = ["critical", "high", "medium", "low"];
@@ -22,6 +23,7 @@ interface PriorityIconProps {
 }
 
 export function PriorityIcon({ priority, onChange, className, showLabel }: PriorityIconProps) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const config = priorityConfig[priority] ?? priorityConfig.medium!;
   const Icon = config.icon;
@@ -39,12 +41,14 @@ export function PriorityIcon({ priority, onChange, className, showLabel }: Prior
     </span>
   );
 
-  if (!onChange) return showLabel ? <span className="inline-flex items-center gap-1.5">{icon}<span className="text-sm">{config.label}</span></span> : icon;
+  const label = t(`newIssue.${priority}`);
+
+  if (!onChange) return showLabel ? <span className="inline-flex items-center gap-1.5">{icon}<span className="text-sm">{label}</span></span> : icon;
 
   const trigger = showLabel ? (
     <button className="inline-flex items-center gap-1.5 cursor-pointer hover:bg-accent/50 rounded px-1 -mx-1 py-0.5 transition-colors">
       {icon}
-      <span className="text-sm">{config.label}</span>
+      <span className="text-sm">{label}</span>
     </button>
   ) : icon;
 
@@ -57,18 +61,18 @@ export function PriorityIcon({ priority, onChange, className, showLabel }: Prior
           const PIcon = c.icon;
           return (
             <Button
-              key={p}
-              variant="ghost"
-              size="sm"
-              className={cn("w-full justify-start gap-2 text-xs", p === priority && "bg-accent")}
-              onClick={() => {
-                onChange(p);
-                setOpen(false);
-              }}
-            >
-              <PIcon className={cn("h-3.5 w-3.5", c.color)} />
-              {c.label}
-            </Button>
+            key={p}
+            variant="ghost"
+            size="sm"
+            className={cn("w-full justify-start gap-2 text-xs", p === priority && "bg-accent")}
+            onClick={() => {
+              onChange(p);
+              setOpen(false);
+            }}
+          >
+            <PIcon className={cn("h-3.5 w-3.5", c.color)} />
+            {t(`newIssue.${p}`)}
+          </Button>
           );
         })}
       </PopoverContent>

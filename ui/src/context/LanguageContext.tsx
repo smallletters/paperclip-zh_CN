@@ -20,6 +20,9 @@ interface LanguageContextValue {
   setLanguage: (language: Language) => void;
   toggleLanguage: () => void;
   t: (key: string, vars?: Record<string, string>) => string;
+  formatDate: (date: Date | string) => string;
+  formatDateTime: (date: Date | string) => string;
+  relativeTime: (date: Date | string) => string;
 }
 
 const LANGUAGE_STORAGE_KEY = "paperclip.language";
@@ -61,6 +64,8 @@ const translations: Record<Language, Record<string, string>> = {
     "newIssue.in": "in",
     "newIssue.assignee": "Assignee",
     "newIssue.noAssignee": "No assignee",
+    "newIssue.assignTo": "Assign to",
+    "newIssue.assignToRequester": "Assign to requester",
     "newIssue.searchAssignees": "Search assignees...",
     "newIssue.noAssigneesFound": "No assignees found.",
     "newIssue.project": "Project",
@@ -72,10 +77,19 @@ const translations: Record<Language, Record<string, string>> = {
     "newIssue.attachments": "Attachments",
     "newIssue.removeDocument": "Remove document",
     "newIssue.removeAttachment": "Remove attachment",
+    "newIssue.documentKey": "Document key",
+    "newIssue.documentKeyPattern": "Document key must start with a letter or number and use only lowercase letters, numbers, -, or _.",
+    "newIssue.documentKeyRequired": "Document key and body are required",
+    "newIssue.documentBodyRequired": "Document body cannot be empty",
+    "newIssue.optionalTitle": "Optional title",
+    "newIssue.markdownBody": "Markdown body",
+    "newIssue.createDocument": "Create document",
+    "newIssue.saving": "Saving...",
     "newIssue.status": "Status",
     "newIssue.priority": "Priority",
     "newIssue.labels": "Labels",
     "newIssue.upload": "Upload",
+    "newIssue.uploading": "Uploading...",
     "newIssue.startDate": "Start date",
     "newIssue.dueDate": "Due date",
     "newIssue.discardDraft": "Discard Draft",
@@ -101,9 +115,12 @@ const translations: Record<Language, Record<string, string>> = {
     "newIssue.enableChrome": "Enable Chrome (--chrome)",
     "newIssue.backlog": "Backlog",
     "newIssue.todo": "Todo",
+    "newIssue.planned": "Planned",
     "newIssue.inProgress": "In Progress",
     "newIssue.inReview": "In Review",
     "newIssue.done": "Done",
+    "newIssue.cancelled": "Cancelled",
+    "newIssue.blocked": "Blocked",
     "newIssue.critical": "Critical",
     "newIssue.high": "High",
     "newIssue.medium": "Medium",
@@ -113,6 +130,17 @@ const translations: Record<Language, Record<string, string>> = {
     "newIssue.xHigh": "X-High",
     "newIssue.max": "Max",
 
+    // New Agent Dialog
+    "newAgent.title": "Create a new agent",
+    "newAgent.description": "(type in what kind of agent you want here)",
+    "newAgent.addTitle": "Add a new agent",
+    "newAgent.recommendation": "We recommend letting your CEO handle agent setup — they know the org structure and can configure reporting, permissions, and adapters.",
+    "newAgent.askCeo": "Ask the CEO to create a new agent",
+    "newAgent.advancedConfig": "I want advanced configuration myself",
+    "newAgent.chooseAdapter": "Choose your adapter type for advanced setup.",
+    "newAgent.back": "Back",
+    "newAgent.recommended": "Recommended",
+
     // 按钮
     "btn.save": "Save",
     "btn.cancel": "Cancel",
@@ -120,10 +148,12 @@ const translations: Record<Language, Record<string, string>> = {
     "btn.edit": "Edit",
     "btn.create": "Create",
     "btn.creating": "Creating...",
+    "btn.posting": "Posting...",
     "btn.createRoutine": "Create routine",
     "btn.close": "Close",
     "btn.confirm": "Confirm",
     "btn.add": "Add",
+    "btn.new": "New",
     "btn.newIssue": "New Issue",
     "btn.createIssue": "Create Issue",
     "btn.clear": "Clear",
@@ -531,6 +561,46 @@ const translations: Record<Language, Record<string, string>> = {
     "page.activity.title": "Activity",
     "page.activity.selectCompany": "Select a company to view activity.",
     "page.activity.noActivity": "No activity yet.",
+
+    // Issue Detail 页面
+    "page.issueDetail.uploadAttachment": "Upload attachment",
+    "page.issueDetail.newDocument": "New document",
+    "page.issueDetail.comments": "Comments",
+    "page.issueDetail.subIssues": "Sub-issues",
+    "page.issueDetail.activity": "Activity",
+    "page.issueDetail.timeline": "Timeline",
+    "page.issueDetail.timelineCount": "Timeline ({count})",
+    "page.issueDetail.noTimelineEntries": "No timeline entries yet.",
+    "page.issueDetail.leaveComment": "Leave a comment...",
+    "page.issueDetail.reopen": "Re-open",
+    "page.issueDetail.assignee": "Assignee",
+    "page.issueDetail.comment": "Comment",
+    "page.issueDetail.queuedComments": "Queued Comments ({count})",
+    "page.issueDetail.updatedTask": "updated this task",
+
+    // Issue Properties
+    "page.issueProperties.title": "Properties",
+    "page.issueProperties.showProperties": "Show properties",
+    "page.issueProperties.hideIssue": "Hide this Issue",
+    "page.issueProperties.status": "Status",
+    "page.issueProperties.priority": "Priority",
+    "page.issueProperties.labels": "Labels",
+    "page.issueProperties.noLabels": "No labels",
+    "page.issueProperties.assignee": "Assignee",
+    "page.issueProperties.unassigned": "Unassigned",
+    "page.issueProperties.project": "Project",
+    "page.issueProperties.noProject": "No project",
+    "page.issueProperties.createdBy": "Created by",
+    "page.issueProperties.me": "Me",
+    "page.issueProperties.created": "Created",
+    "page.issueProperties.updated": "Updated",
+    "page.issueProperties.parent": "Parent",
+    "page.issueProperties.depth": "Depth",
+    "page.issueProperties.started": "Started",
+    "page.issueProperties.completed": "Completed",
+    "page.issueProperties.user": "User",
+    "page.issueProperties.todo": "Todo",
+    "page.issueProperties.medium": "Medium",
     "label.filterByType": "Filter by type",
     "label.allTypes": "All types",
     "activity.system": "System",
@@ -624,6 +694,133 @@ const translations: Record<Language, Record<string, string>> = {
     "section.dangerZone": "Danger Zone",
     "label.companyName": "Company name",
     "hint.companyName": "The display name for your company.",
+
+    // Onboarding Wizard
+    "wizard.company": "Company",
+    "wizard.agent": "Agent",
+    "wizard.task": "Task",
+    "wizard.launch": "Launch",
+    "wizard.nameYourCompany": "Name your company",
+    "wizard.companyDescription": "This is the organization your agents will work for.",
+    "wizard.companyNameLabel": "Company name",
+    "wizard.companyNamePlaceholder": "Acme Corp",
+    "wizard.missionGoal": "Mission / goal (optional)",
+    "wizard.missionPlaceholder": "What is this company trying to achieve?",
+    "wizard.next": "Next",
+    "wizard.creating": "Creating...",
+    "wizard.close": "Close",
+    "wizard.back": "Back",
+    "wizard.createFirstAgent": "Create your first agent",
+    "wizard.agentDescription": "Choose how this agent will run tasks.",
+    "wizard.agentNameLabel": "Agent name",
+    "wizard.agentNamePlaceholder": "CEO",
+    "wizard.adapterType": "Adapter type",
+    "wizard.recommended": "Recommended",
+    "wizard.moreAdapterTypes": "More Agent Adapter Types",
+    "wizard.comingSoon": "Coming soon",
+    "wizard.model": "Model",
+    "wizard.selectModelRequired": "Select model (required)",
+    "wizard.default": "Default",
+    "wizard.searchModels": "Search models...",
+    "wizard.noModels": "No models discovered.",
+    "wizard.adapterEnvCheck": "Adapter environment check",
+    "wizard.adapterEnvCheckDescription": "Runs a live probe that asks the adapter CLI to respond with hello.",
+    "wizard.testNow": "Test now",
+    "wizard.testing": "Testing...",
+    "wizard.passed": "Passed",
+    "wizard.failed": "Failed",
+    "wizard.warnings": "Warnings",
+    "wizard.hint": "Hint",
+    "wizard.anthropicKeySet": "Claude failed while ANTHROPIC_API_KEY is set. You can clear it in this CEO adapter config and retry the probe.",
+    "wizard.retrying": "Retrying...",
+    "wizard.unsetAnthropicKey": "Unset ANTHROPIC_API_KEY",
+    "wizard.manualDebug": "Manual debug",
+    "wizard.prompt": "Prompt",
+    "wizard.authFailSet": "If auth fails, set",
+    "wizard.authFailOrRun": "in env or run",
+    "wizard.loginRequired": "If login is required, run",
+    "wizard.andRetry": "and retry.",
+    "wizard.gatewayUrl": "Gateway URL",
+    "wizard.webhookUrl": "Webhook URL",
+    "wizard.giveSomethingToDo": "Give it something to do",
+    "wizard.taskDescription": "Give your agent a small task to start with — a bug fix, a research question, writing a script.",
+    "wizard.taskTitle": "Task title",
+    "wizard.taskTitlePlaceholder": "e.g. Research competitor pricing",
+    "wizard.descriptionOptional": "Description (optional)",
+    "wizard.descriptionPlaceholder": "Add more detail about what the agent should do...",
+    "wizard.readyToLaunch": "Ready to launch",
+    "wizard.launchDescription": "Everything is set up. Launching now will create the starter task, wake the agent, and open the issue.",
+    "wizard.createAndOpen": "Create & Open Issue",
+    "wizard.createCompanyBeforeTest": "Create or select a company before testing adapter environment.",
+    "wizard.adapterEnvTestFailed": "Adapter environment test failed",
+    "wizard.createCompanyFailed": "Failed to create company",
+    "wizard.opencodeModelRequired": "OpenCode requires an explicit model in provider/model format.",
+    "wizard.opencodeLoadFailed": "Failed to load OpenCode models.",
+    "wizard.opencodeStillLoading": "OpenCode models are still loading. Please wait and try again.",
+    "wizard.opencodeNoModels": "No OpenCode models discovered. Run `opencode models` and authenticate providers.",
+    "wizard.opencodeModelUnavailable": "Configured OpenCode model is unavailable: {model}",
+    "wizard.createAgentFailed": "Failed to create agent",
+    "wizard.anthropicRetryFailed": "Retried with ANTHROPIC_API_KEY unset in adapter config, but the environment test is still failing.",
+    "wizard.anthropicUnsetFailed": "Failed to unset ANTHROPIC_API_KEY and retry.",
+    "wizard.createTaskFailed": "Failed to create task",
+
+    // New Project Dialog
+    "newProject.title": "New project",
+    "newProject.projectName": "Project name",
+    "newProject.addDescription": "Add description...",
+    "newProject.repoUrl": "Repo URL",
+    "newProject.optional": "optional",
+    "newProject.repoUrlTooltip": "Link a GitHub repository so agents can clone, read, and push code for this project.",
+    "newProject.localFolder": "Local folder",
+    "newProject.localFolderTooltip": "Set an absolute path on this machine where local agents will read and write files for this project.",
+    "newProject.localPathError": "Local folder must be a full absolute path.",
+    "newProject.repoUrlError": "Repo must use a valid GitHub or GitHub Enterprise repo URL.",
+    "newProject.githubRepo": "GitHub repo",
+    "newProject.completed": "Completed",
+    "newProject.goal": "Goal",
+    "newProject.noGoal": "No goal",
+    "newProject.allGoalsSelected": "All goals already selected.",
+    "newProject.createFailed": "Failed to create project.",
+    "newProject.creating": "Creating…",
+    "newProject.createProject": "Create project",
+
+    // Path Instructions Modal
+    "pathModal.title": "How to get a full path",
+    "pathModal.description": "Paste the absolute path (e.g.",
+    "pathModal.descriptionSuffix": ") into the input field.",
+    "pathModal.choose": "Choose",
+    "pathModal.macOS": "macOS",
+    "pathModal.windows": "Windows",
+    "pathModal.linux": "Linux",
+    "pathModal.mac.step1": "Open Finder and navigate to the folder.",
+    "pathModal.mac.step2": "Right-click (or Control-click) the folder.",
+    "pathModal.mac.step3": "Hold the Option (⌥) key — \"Copy\" changes to \"Copy as Pathname\".",
+    "pathModal.mac.step4": "Click \"Copy as Pathname\", then paste here.",
+    "pathModal.mac.tip": "You can also open Terminal, type cd, drag the folder into the terminal window, and press Enter. Then type pwd to see the full path.",
+    "pathModal.windows.step1": "Open File Explorer and navigate to the folder.",
+    "pathModal.windows.step2": "Click in the address bar at the top — the full path will appear.",
+    "pathModal.windows.step3": "Copy the path, then paste here.",
+    "pathModal.windows.tip": "Alternatively, hold Shift and right-click the folder, then select \"Copy as path\".",
+    "pathModal.linux.step1": "Open a terminal and navigate to the directory with cd.",
+    "pathModal.linux.step2": "Run pwd to print the full path.",
+    "pathModal.linux.step3": "Copy the output and paste here.",
+    "pathModal.linux.tip": "In most file managers, Ctrl+L reveals the full path in the address bar.",
+
+    // Time Ago
+    "timeAgo.justNow": "just now",
+    "timeAgo.minutesAgo": "{count}m ago",
+    "timeAgo.hoursAgo": "{count}h ago",
+    "timeAgo.daysAgo": "{count}d ago",
+    "timeAgo.weeksAgo": "{count}w ago",
+    "timeAgo.monthsAgo": "{count}mo ago",
+
+    // Filter labels
+    "filter.all": "All",
+    "filter.active": "Active",
+    "filter.noAssignee": "No assignee",
+    "filter.me": "Me",
+    "filter.user": "User",
+
     "label.description": "Description",
     "hint.description": "Optional description shown in the company profile.",
     "placeholder.description": "Optional company description",
@@ -660,6 +857,33 @@ const translations: Record<Language, Record<string, string>> = {
     "btn.alreadyArchived": "Already archived",
     "msg.feedbackSharingEnabled": "Feedback sharing enabled",
     "msg.feedbackSharingDisabled": "Feedback sharing disabled",
+
+    // Goal Dialog
+    "goal.newGoal": "New goal",
+    "goal.newSubGoal": "New sub-goal",
+    "goal.titlePlaceholder": "Goal title",
+    "goal.descriptionPlaceholder": "Add description...",
+    "goal.parentGoal": "Parent goal",
+    "goal.noParent": "No parent",
+    "goal.creating": "Creating…",
+    "goal.createGoal": "Create goal",
+    "goal.createSubGoal": "Create sub-goal",
+    "goal.level.company": "Company",
+    "goal.level.team": "Team",
+    "goal.level.agent": "Agent",
+    "goal.level.task": "Task",
+
+    // Not Found Page
+    "notFound.breadcrumb": "Not Found",
+    "notFound.companyNotFound": "Company not found",
+    "notFound.pageNotFound": "Page not found",
+    "notFound.noCompanyMatches": "No company matches prefix \"{prefix}\".",
+    "notFound.unknown": "unknown",
+    "notFound.routeNotExist": "This route does not exist.",
+    "notFound.requestedPath": "Requested path",
+    "notFound.openDashboard": "Open dashboard",
+    "notFound.goHome": "Go home",
+
     "msg.failedUpdateFeedback": "Failed to update feedback sharing",
     "msg.failedCreateInvite": "Failed to create invite",
     "status.removing": "Removing...",
@@ -1055,6 +1279,8 @@ const translations: Record<Language, Record<string, string>> = {
     "newIssue.in": "在",
     "newIssue.assignee": "负责人",
     "newIssue.noAssignee": "无负责人",
+    "newIssue.assignTo": "分配给",
+    "newIssue.assignToRequester": "分配给请求者",
     "newIssue.searchAssignees": "搜索负责人...",
     "newIssue.noAssigneesFound": "未找到负责人。",
     "newIssue.project": "项目",
@@ -1066,10 +1292,19 @@ const translations: Record<Language, Record<string, string>> = {
     "newIssue.attachments": "附件",
     "newIssue.removeDocument": "移除文档",
     "newIssue.removeAttachment": "移除附件",
+    "newIssue.documentKey": "文档键",
+    "newIssue.documentKeyPattern": "文档键必须以字母或数字开头，且只能使用小写字母、数字、- 或 _。",
+    "newIssue.documentKeyRequired": "文档键和内容是必填项",
+    "newIssue.documentBodyRequired": "文档内容不能为空",
+    "newIssue.optionalTitle": "可选标题",
+    "newIssue.markdownBody": "Markdown 内容",
+    "newIssue.createDocument": "创建文档",
+    "newIssue.saving": "保存中...",
     "newIssue.status": "状态",
     "newIssue.priority": "优先级",
     "newIssue.labels": "标签",
     "newIssue.upload": "上传",
+    "newIssue.uploading": "上传中...",
     "newIssue.startDate": "开始日期",
     "newIssue.dueDate": "截止日期",
     "newIssue.discardDraft": "放弃草稿",
@@ -1095,9 +1330,12 @@ const translations: Record<Language, Record<string, string>> = {
     "newIssue.enableChrome": "启用 Chrome (--chrome)",
     "newIssue.backlog": "待办",
     "newIssue.todo": "待处理",
+    "newIssue.planned": "计划中",
     "newIssue.inProgress": "进行中",
     "newIssue.inReview": "审核中",
     "newIssue.done": "已完成",
+    "newIssue.cancelled": "已取消",
+    "newIssue.blocked": "已阻塞",
     "newIssue.critical": "紧急",
     "newIssue.high": "高",
     "newIssue.medium": "中",
@@ -1107,6 +1345,17 @@ const translations: Record<Language, Record<string, string>> = {
     "newIssue.xHigh": "超高",
     "newIssue.max": "最大",
 
+    // New Agent Dialog
+    "newAgent.title": "创建新智能体",
+    "newAgent.description": "（在此输入您想要的智能体类型）",
+    "newAgent.addTitle": "添加新智能体",
+    "newAgent.recommendation": "我们建议您让 CEO 来处理智能体设置 — 他们了解组织架构，可以配置报告、权限和适配器。",
+    "newAgent.askCeo": "请 CEO 创建新智能体",
+    "newAgent.advancedConfig": "我想自己进行高级配置",
+    "newAgent.chooseAdapter": "选择适配器类型进行高级设置。",
+    "newAgent.back": "返回",
+    "newAgent.recommended": "推荐",
+
     // 按钮
     "btn.save": "保存",
     "btn.cancel": "取消",
@@ -1114,10 +1363,12 @@ const translations: Record<Language, Record<string, string>> = {
     "btn.edit": "编辑",
     "btn.create": "创建",
     "btn.creating": "创建中...",
+    "btn.posting": "发布中...",
     "btn.createRoutine": "创建例行程序",
     "btn.close": "关闭",
     "btn.confirm": "确认",
     "btn.add": "添加",
+    "btn.new": "新建",
     "btn.newIssue": "新建问题",
     "btn.createIssue": "创建问题",
     "btn.clear": "清除",
@@ -1499,6 +1750,46 @@ const translations: Record<Language, Record<string, string>> = {
     "page.activity.title": "活动",
     "page.activity.selectCompany": "选择公司以查看活动。",
     "page.activity.noActivity": "尚无活动。",
+
+    // Issue Detail 页面
+    "page.issueDetail.uploadAttachment": "上传附件",
+    "page.issueDetail.newDocument": "新建文档",
+    "page.issueDetail.comments": "评论",
+    "page.issueDetail.subIssues": "子问题",
+    "page.issueDetail.activity": "活动",
+    "page.issueDetail.timeline": "时间线",
+    "page.issueDetail.timelineCount": "时间线 ({count})",
+    "page.issueDetail.noTimelineEntries": "暂无时间线条目。",
+    "page.issueDetail.leaveComment": "留下评论...",
+    "page.issueDetail.reopen": "重新打开",
+    "page.issueDetail.assignee": "负责人",
+    "page.issueDetail.comment": "评论",
+    "page.issueDetail.queuedComments": "队列中的评论 ({count})",
+    "page.issueDetail.updatedTask": "更新了此任务",
+
+    // Issue Properties
+    "page.issueProperties.title": "属性",
+    "page.issueProperties.showProperties": "显示属性",
+    "page.issueProperties.hideIssue": "隐藏此问题",
+    "page.issueProperties.status": "状态",
+    "page.issueProperties.priority": "优先级",
+    "page.issueProperties.labels": "标签",
+    "page.issueProperties.noLabels": "无标签",
+    "page.issueProperties.assignee": "负责人",
+    "page.issueProperties.unassigned": "未分配",
+    "page.issueProperties.project": "项目",
+    "page.issueProperties.noProject": "无项目",
+    "page.issueProperties.createdBy": "创建者",
+    "page.issueProperties.me": "我",
+    "page.issueProperties.created": "创建时间",
+    "page.issueProperties.updated": "更新时间",
+    "page.issueProperties.parent": "父问题",
+    "page.issueProperties.depth": "深度",
+    "page.issueProperties.started": "开始时间",
+    "page.issueProperties.completed": "完成时间",
+    "page.issueProperties.user": "用户",
+    "page.issueProperties.todo": "待处理",
+    "page.issueProperties.medium": "中",
     "label.filterByType": "按类型筛选",
     "label.allTypes": "所有类型",
     "activity.system": "系统",
@@ -1612,6 +1903,133 @@ const translations: Record<Language, Record<string, string>> = {
     "section.dangerZone": "危险区域",
     "label.companyName": "公司名称",
     "hint.companyName": "您公司的显示名称。",
+
+    // 引导向导
+    "wizard.company": "公司",
+    "wizard.agent": "智能体",
+    "wizard.task": "任务",
+    "wizard.launch": "启动",
+    "wizard.nameYourCompany": "为您的公司命名",
+    "wizard.companyDescription": "这是您的智能体将为之工作的组织。",
+    "wizard.companyNameLabel": "公司名称",
+    "wizard.companyNamePlaceholder": "示例公司",
+    "wizard.missionGoal": "使命 / 目标（可选）",
+    "wizard.missionPlaceholder": "这家公司试图实现什么目标？",
+    "wizard.next": "下一步",
+    "wizard.creating": "创建中...",
+    "wizard.close": "关闭",
+    "wizard.back": "返回",
+    "wizard.createFirstAgent": "创建您的第一个智能体",
+    "wizard.agentDescription": "选择此智能体将如何运行任务。",
+    "wizard.agentNameLabel": "智能体名称",
+    "wizard.agentNamePlaceholder": "CEO",
+    "wizard.adapterType": "适配器类型",
+    "wizard.recommended": "推荐",
+    "wizard.moreAdapterTypes": "更多智能体适配器类型",
+    "wizard.comingSoon": "即将推出",
+    "wizard.model": "模型",
+    "wizard.selectModelRequired": "选择模型（必填）",
+    "wizard.default": "默认",
+    "wizard.searchModels": "搜索模型...",
+    "wizard.noModels": "未发现模型。",
+    "wizard.adapterEnvCheck": "适配器环境检查",
+    "wizard.adapterEnvCheckDescription": "运行实时探测，要求适配器 CLI 响应 hello。",
+    "wizard.testNow": "立即测试",
+    "wizard.testing": "测试中...",
+    "wizard.passed": "通过",
+    "wizard.failed": "失败",
+    "wizard.warnings": "警告",
+    "wizard.hint": "提示",
+    "wizard.anthropicKeySet": "Claude 在 ANTHROPIC_API_KEY 设置时失败。您可以在此 CEO 适配器配置中清除它并重试探测。",
+    "wizard.retrying": "重试中...",
+    "wizard.unsetAnthropicKey": "取消设置 ANTHROPIC_API_KEY",
+    "wizard.manualDebug": "手动调试",
+    "wizard.prompt": "提示词",
+    "wizard.authFailSet": "如果认证失败，设置",
+    "wizard.authFailOrRun": "在环境变量中，或运行",
+    "wizard.loginRequired": "如果需要登录，运行",
+    "wizard.andRetry": "并重试。",
+    "wizard.gatewayUrl": "网关 URL",
+    "wizard.webhookUrl": "Webhook URL",
+    "wizard.giveSomethingToDo": "给它一些任务",
+    "wizard.taskDescription": "给您的智能体一个小任务开始——修复 bug、研究问题、编写脚本。",
+    "wizard.taskTitle": "任务标题",
+    "wizard.taskTitlePlaceholder": "例如：研究竞争对手定价",
+    "wizard.descriptionOptional": "描述（可选）",
+    "wizard.descriptionPlaceholder": "添加有关智能体应该做什么的更多详细信息...",
+    "wizard.readyToLaunch": "准备启动",
+    "wizard.launchDescription": "一切已设置就绪。现在启动将创建启动任务、唤醒智能体并打开问题。",
+    "wizard.createAndOpen": "创建并打开问题",
+    "wizard.createCompanyBeforeTest": "在测试适配器环境之前创建或选择公司。",
+    "wizard.adapterEnvTestFailed": "适配器环境测试失败",
+    "wizard.createCompanyFailed": "创建公司失败",
+    "wizard.opencodeModelRequired": "OpenCode 需要显式模型，格式为 provider/model。",
+    "wizard.opencodeLoadFailed": "加载 OpenCode 模型失败。",
+    "wizard.opencodeStillLoading": "OpenCode 模型仍在加载中。请稍后再试。",
+    "wizard.opencodeNoModels": "未发现 OpenCode 模型。运行 `opencode models` 并认证提供商。",
+    "wizard.opencodeModelUnavailable": "配置的 OpenCode 模型不可用：{model}",
+    "wizard.createAgentFailed": "创建智能体失败",
+    "wizard.anthropicRetryFailed": "已在适配器配置中取消设置 ANTHROPIC_API_KEY 并重试，但环境测试仍然失败。",
+    "wizard.anthropicUnsetFailed": "取消设置 ANTHROPIC_API_KEY 并重试失败。",
+    "wizard.createTaskFailed": "创建任务失败",
+
+    // New Project Dialog
+    "newProject.title": "新建项目",
+    "newProject.projectName": "项目名称",
+    "newProject.addDescription": "添加描述...",
+    "newProject.repoUrl": "仓库 URL",
+    "newProject.optional": "可选",
+    "newProject.repoUrlTooltip": "链接 GitHub 仓库，以便智能体可以克隆、读取和推送此项目的代码。",
+    "newProject.localFolder": "本地文件夹",
+    "newProject.localFolderTooltip": "设置此机器上的绝对路径，本地智能体将在此路径读取和写入此项目的文件。",
+    "newProject.localPathError": "本地文件夹必须是完整的绝对路径。",
+    "newProject.repoUrlError": "仓库必须使用有效的 GitHub 或 GitHub Enterprise 仓库 URL。",
+    "newProject.githubRepo": "GitHub 仓库",
+    "newProject.completed": "已完成",
+    "newProject.goal": "目标",
+    "newProject.noGoal": "无目标",
+    "newProject.allGoalsSelected": "已选择所有目标。",
+    "newProject.createFailed": "创建项目失败。",
+    "newProject.creating": "创建中…",
+    "newProject.createProject": "创建项目",
+
+    // Path Instructions Modal
+    "pathModal.title": "如何获取完整路径",
+    "pathModal.description": "粘贴绝对路径（例如",
+    "pathModal.descriptionSuffix": "）到输入字段中。",
+    "pathModal.choose": "选择",
+    "pathModal.macOS": "macOS",
+    "pathModal.windows": "Windows",
+    "pathModal.linux": "Linux",
+    "pathModal.mac.step1": "打开 Finder 并导航到文件夹。",
+    "pathModal.mac.step2": "右键单击（或 Control 单击）文件夹。",
+    "pathModal.mac.step3": "按住 Option (⌥) 键 — \"复制\" 变为 \"复制为路径名称\"。",
+    "pathModal.mac.step4": "单击 \"复制为路径名称\"，然后粘贴到此处。",
+    "pathModal.mac.tip": "您也可以打开终端，输入 cd，将文件夹拖入终端窗口，然后按回车。然后输入 pwd 查看完整路径。",
+    "pathModal.windows.step1": "打开文件资源管理器并导航到文件夹。",
+    "pathModal.windows.step2": "单击顶部地址栏 — 完整路径将显示。",
+    "pathModal.windows.step3": "复制路径，然后粘贴到此处。",
+    "pathModal.windows.tip": "或者，按住 Shift 并右键单击文件夹，然后选择 \"复制为路径\"。",
+    "pathModal.linux.step1": "打开终端并使用 cd 导航到目录。",
+    "pathModal.linux.step2": "运行 pwd 打印完整路径。",
+    "pathModal.linux.step3": "复制输出并粘贴到此处。",
+    "pathModal.linux.tip": "在大多数文件管理器中，Ctrl+L 会在地址栏中显示完整路径。",
+
+    // Time Ago
+    "timeAgo.justNow": "刚刚",
+    "timeAgo.minutesAgo": "{count} 分钟前",
+    "timeAgo.hoursAgo": "{count} 小时前",
+    "timeAgo.daysAgo": "{count} 天前",
+    "timeAgo.weeksAgo": "{count} 周前",
+    "timeAgo.monthsAgo": "{count} 个月前",
+
+    // Filter labels
+    "filter.all": "全部",
+    "filter.active": "活跃",
+    "filter.noAssignee": "未分配",
+    "filter.me": "我",
+    "filter.user": "用户",
+
     "label.description": "描述",
     "hint.description": "在公司资料中显示的描述（可选）。",
     "placeholder.description": "可选的公司描述",
@@ -1648,6 +2066,33 @@ const translations: Record<Language, Record<string, string>> = {
     "btn.alreadyArchived": "已归档",
     "msg.feedbackSharingEnabled": "反馈分享已启用",
     "msg.feedbackSharingDisabled": "反馈分享已禁用",
+
+    // Goal Dialog
+    "goal.newGoal": "新目标",
+    "goal.newSubGoal": "新子目标",
+    "goal.titlePlaceholder": "目标标题",
+    "goal.descriptionPlaceholder": "添加描述...",
+    "goal.parentGoal": "父目标",
+    "goal.noParent": "无父目标",
+    "goal.creating": "创建中…",
+    "goal.createGoal": "创建目标",
+    "goal.createSubGoal": "创建子目标",
+    "goal.level.company": "公司",
+    "goal.level.team": "团队",
+    "goal.level.agent": "智能体",
+    "goal.level.task": "任务",
+
+    // Not Found Page
+    "notFound.breadcrumb": "未找到",
+    "notFound.companyNotFound": "公司未找到",
+    "notFound.pageNotFound": "页面未找到",
+    "notFound.noCompanyMatches": "没有公司匹配前缀 \"{prefix}\"。",
+    "notFound.unknown": "未知",
+    "notFound.routeNotExist": "此路由不存在。",
+    "notFound.requestedPath": "请求路径",
+    "notFound.openDashboard": "打开仪表盘",
+    "notFound.goHome": "返回首页",
+
     "msg.failedUpdateFeedback": "更新反馈分享失败",
     "msg.failedCreateInvite": "创建邀请失败",
     "status.removing": "移除中...",
@@ -1959,7 +2404,7 @@ const translations: Record<Language, Record<string, string>> = {
     "dashboard.welcomeMessage": "欢迎使用 Paperclip。设置您的第一个公司和代理以开始使用。",
     "dashboard.getStarted": "开始使用",
     "dashboard.selectCompany": "创建或选择一个公司以查看仪表盘。",
-    "dashboard.noAgents": "您还没有代理。",
+    "dashboard.noAgents": "您还没有智能体。",
     "dashboard.createAgent": "在这里创建一个",
     "dashboard.budgetIncident": "个活跃的预算事件 | 个活跃的预算事件",
     "dashboard.agentsPaused": "个代理已暂停",
@@ -2077,6 +2522,71 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     [language]
   );
 
+  /**
+   * 格式化日期
+   * @param date 日期
+   * @returns 格式化后的日期字符串
+   */
+  const formatDate = useCallback(
+    (date: Date | string) => {
+      const d = new Date(date);
+      if (language === "zh") {
+        return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+      }
+      return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    },
+    [language]
+  );
+
+  /**
+   * 格式化日期时间
+   * @param date 日期
+   * @returns 格式化后的日期时间字符串
+   */
+  const formatDateTime = useCallback(
+    (date: Date | string) => {
+      const d = new Date(date);
+      if (language === "zh") {
+        return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${d.getHours()}:${d.getMinutes().toString().padStart(2, "0")}`;
+      }
+      return d.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    },
+    [language]
+  );
+
+  /**
+   * 相对时间
+   * @param date 日期
+   * @returns 相对时间字符串
+   */
+  const relativeTime = useCallback(
+    (date: Date | string) => {
+      const now = Date.now();
+      const then = new Date(date).getTime();
+      const diffSec = Math.round((now - then) / 1000);
+      const isZh = language === "zh";
+      if (diffSec < 60) return isZh ? "刚刚" : "just now";
+      const diffMin = Math.round(diffSec / 60);
+      if (diffMin < 60) return isZh ? `${diffMin}分钟前` : `${diffMin}m ago`;
+      const diffHr = Math.round(diffMin / 60);
+      if (diffHr < 24) return isZh ? `${diffHr}小时前` : `${diffHr}h ago`;
+      const diffDay = Math.round(diffHr / 24);
+      if (diffDay < 30) return isZh ? `${diffDay}天前` : `${diffDay}d ago`;
+      return formatDate(date);
+    },
+    [language, formatDate]
+  );
+
   // 持久化语言设置到本地存储
   useEffect(() => {
     try {
@@ -2092,8 +2602,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       setLanguage,
       toggleLanguage,
       t,
+      formatDate,
+      formatDateTime,
+      relativeTime,
     }),
-    [language, setLanguage, toggleLanguage, t]
+    [language, setLanguage, toggleLanguage, t, formatDate, formatDateTime, relativeTime]
   );
 
   return (

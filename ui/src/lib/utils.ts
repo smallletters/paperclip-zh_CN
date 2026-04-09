@@ -11,16 +11,24 @@ export function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-export function formatDate(date: Date | string): string {
-  return new Date(date).toLocaleDateString("en-US", {
+export function formatDate(date: Date | string, locale: string = "en-US"): string {
+  const d = new Date(date);
+  if (locale === "zh-CN") {
+    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+  }
+  return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 }
 
-export function formatDateTime(date: Date | string): string {
-  return new Date(date).toLocaleString("en-US", {
+export function formatDateTime(date: Date | string, locale: string = "en-US"): string {
+  const d = new Date(date);
+  if (locale === "zh-CN") {
+    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${d.getHours()}:${d.getMinutes().toString().padStart(2, "0")}`;
+  }
+  return d.toLocaleString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -29,18 +37,19 @@ export function formatDateTime(date: Date | string): string {
   });
 }
 
-export function relativeTime(date: Date | string): string {
+export function relativeTime(date: Date | string, locale: string = "en-US"): string {
   const now = Date.now();
   const then = new Date(date).getTime();
   const diffSec = Math.round((now - then) / 1000);
-  if (diffSec < 60) return "just now";
+  const isZh = locale === "zh-CN";
+  if (diffSec < 60) return isZh ? "刚刚" : "just now";
   const diffMin = Math.round(diffSec / 60);
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 60) return isZh ? `${diffMin}分钟前` : `${diffMin}m ago`;
   const diffHr = Math.round(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffHr < 24) return isZh ? `${diffHr}小时前` : `${diffHr}h ago`;
   const diffDay = Math.round(diffHr / 24);
-  if (diffDay < 30) return `${diffDay}d ago`;
-  return formatDate(date);
+  if (diffDay < 30) return isZh ? `${diffDay}天前` : `${diffDay}d ago`;
+  return formatDate(date, locale);
 }
 
 export function formatTokens(n: number): string {

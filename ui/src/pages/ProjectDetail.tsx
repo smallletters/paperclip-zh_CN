@@ -27,6 +27,7 @@ import { PageTabBar } from "../components/PageTabBar";
 import { buildProjectWorkspaceSummaries } from "../lib/project-workspaces-tab";
 import { projectRouteRef, projectWorkspaceUrl } from "../lib/utils";
 import { timeAgo } from "../lib/timeAgo";
+import { useLanguage } from "../context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { PluginLauncherOutlet } from "@/plugins/launchers";
@@ -221,6 +222,7 @@ function ProjectWorkspacesContent({
   projectRef: string;
   summaries: ReturnType<typeof buildProjectWorkspaceSummaries>;
 }) {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [runtimeActionKey, setRuntimeActionKey] = useState<string | null>(null);
   const [closingWorkspace, setClosingWorkspace] = useState<{
@@ -298,7 +300,7 @@ function ProjectWorkspacesContent({
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
-            <span className="text-xs text-muted-foreground">{timeAgo(summary.lastUpdatedAt)}</span>
+            <span className="text-xs text-muted-foreground">{timeAgo(summary.lastUpdatedAt, t)}</span>
             {summary.hasRuntimeConfig ? (
               <Button
                 variant="ghost"

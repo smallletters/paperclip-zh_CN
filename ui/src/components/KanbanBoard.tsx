@@ -20,6 +20,7 @@ import {
 import { StatusIcon } from "./StatusIcon";
 import { PriorityIcon } from "./PriorityIcon";
 import { Identity } from "./Identity";
+import { useLanguage } from "../context/LanguageContext";
 import type { Issue } from "@paperclipai/shared";
 
 const boardStatuses = [
@@ -32,8 +33,22 @@ const boardStatuses = [
   "cancelled",
 ];
 
-function statusLabel(status: string): string {
-  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+function statusLabel(status: string, t?: (key: string) => string): string {
+  if (!t) {
+    return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+  // Map status to translation keys
+  const statusKeyMap: Record<string, string> = {
+    backlog: "newIssue.backlog",
+    todo: "newIssue.todo",
+    in_progress: "newIssue.inProgress",
+    in_review: "newIssue.inReview",
+    blocked: "newIssue.blocked",
+    done: "newIssue.done",
+    cancelled: "newIssue.cancelled",
+  };
+  const key = statusKeyMap[status];
+  return key ? t(key) : status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 interface Agent {
@@ -61,6 +76,7 @@ function KanbanColumn({
   agents?: Agent[];
   liveIssueIds?: Set<string>;
 }) {
+  const { t } = useLanguage();
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
@@ -68,7 +84,7 @@ function KanbanColumn({
       <div className="flex items-center gap-2 px-2 py-2 mb-1">
         <StatusIcon status={status} />
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {statusLabel(status)}
+          {statusLabel(status, t)}
         </span>
         <span className="text-xs text-muted-foreground/60 ml-auto tabular-nums">
           {issues.length}

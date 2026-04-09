@@ -31,8 +31,26 @@ import type { Issue } from "@paperclipai/shared";
 const statusOrder = ["in_progress", "todo", "backlog", "in_review", "blocked", "done", "cancelled"];
 const priorityOrder = ["critical", "high", "medium", "low"];
 
-function statusLabel(status: string): string {
-  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+function statusLabel(status: string, t?: (key: string) => string): string {
+  if (!t) {
+    return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+  // Map status to translation keys
+  const statusKeyMap: Record<string, string> = {
+    in_progress: "newIssue.inProgress",
+    todo: "newIssue.todo",
+    backlog: "newIssue.backlog",
+    in_review: "newIssue.inReview",
+    blocked: "newIssue.blocked",
+    done: "newIssue.done",
+    cancelled: "newIssue.cancelled",
+    critical: "newIssue.critical",
+    high: "newIssue.high",
+    medium: "newIssue.medium",
+    low: "newIssue.low",
+  };
+  const key = statusKeyMap[status];
+  return key ? t(key) : status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /* ── View state ── */
@@ -63,11 +81,11 @@ const defaultViewState: IssueViewState = {
   collapsedGroups: [],
 };
 
-const quickFilterPresets = [
-  { label: "All", statuses: [] as string[] },
-  { label: "Active", statuses: ["todo", "in_progress", "in_review", "blocked"] },
-  { label: "Backlog", statuses: ["backlog"] },
-  { label: "Done", statuses: ["done", "cancelled"] },
+const getQuickFilterPresets = (t: (key: string) => string) => [
+  { label: t("filter.all"), statuses: [] as string[] },
+  { label: t("filter.active"), statuses: ["todo", "in_progress", "in_review", "blocked"] },
+  { label: t("newIssue.backlog"), statuses: ["backlog"] },
+  { label: t("newIssue.done"), statuses: ["done", "cancelled"] },
 ];
 function getViewState(key: string): IssueViewState {
   try {
@@ -204,7 +222,8 @@ export function IssuesList({
 }: IssuesListProps) {
   const { selectedCompanyId } = useCompany();
   const { openNewIssue } = useDialog();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const locale = language === "zh" ? "zh-CN" : "en-US";
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
@@ -277,13 +296,13 @@ export function IssuesList({
       const groups = groupBy(filtered, (i) => i.status);
       return statusOrder
         .filter((s) => groups[s]?.length)
-        .map((s) => ({ key: s, label: statusLabel(s), items: groups[s]! }));
+        .map((s) => ({ key: s, label: statusLabel(s, t), items: groups[s]! }));
     }
     if (viewState.groupBy === "priority") {
       const groups = groupBy(filtered, (i) => i.priority);
       return priorityOrder
         .filter((p) => groups[p]?.length)
-        .map((p) => ({ key: p, label: statusLabel(p), items: groups[p]! }));
+        .map((p) => ({ key: p, label: statusLabel(p, t), items: groups[p]! }));
     }
     // assignee
     const groups = groupBy(
@@ -294,13 +313,13 @@ export function IssuesList({
       key,
       label:
         key === "__unassigned"
-          ? "Unassigned"
+          ? t("filter.noAssignee")
           : key.startsWith("__user:")
-            ? (formatAssigneeUserLabel(key.slice("__user:".length), currentUserId) ?? "User")
+            ? (formatAssigneeUserLabel(key.slice("__user:".length), currentUserId) ?? t("filter.user"))
             : (agentName(key) ?? key.slice(0, 8)),
       items: groups[key]!,
     }));
-  }, [filtered, viewState.groupBy, agents, agentName, currentUserId]);
+  }, [filtered, viewState.groupBy, agents, agentName, currentUserId, t]);
 
   const newIssueDefaults = useCallback((groupKey?: string) => {
     const defaults: Record<string, string> = {};
@@ -414,7 +433,7 @@ export function IssuesList({
                   )}
                 </>
               )}
-              mobileMeta={timeAgo(issue.updatedAt)}
+              mobileMeta={timeAgo(issue.updatedAt, t)}
               desktopTrailing={(
                 <>
                   {(issue.labels ?? []).length > 0 && (
@@ -461,14 +480,14 @@ export function IssuesList({
                             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-muted-foreground/35 bg-muted/30">
                               <User className="h-3 w-3" />
                             </span>
-                            {formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? "User"}
+                            {formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? t("filter.user")}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-muted-foreground/35 bg-muted/30">
                               <User className="h-3 w-3" />
                             </span>
-                            Assignee
+                            {t("field.assignee")}
                           </span>
                         )}
                       </button>
@@ -481,7 +500,7 @@ export function IssuesList({
                     >
                       <input
                         className="mb-1 w-full border-b border-border bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50"
-                        placeholder="Search assignees..."
+                        placeholder={t("newIssue.searchAssignees")}
                         value={assigneeSearch}
                         onChange={(e) => setAssigneeSearch(e.target.value)}
                         autoFocus
@@ -498,7 +517,7 @@ export function IssuesList({
                             assignIssue(issue.id, null, null);
                           }}
                         >
-                          No assignee
+                          {t("filter.noAssignee")}
                         </button>
                         {currentUserId && (
                           <button
@@ -544,7 +563,7 @@ export function IssuesList({
                   </Popover>
                 </>
               )}
-              trailingMeta={formatDate(issue.createdAt)}
+              trailingMeta={formatDate(issue.createdAt, locale)}
             />
           ))}
         </CollapsibleContent>
@@ -649,7 +668,7 @@ export function IssuesList({
                 <div className="space-y-1.5">
                   <span className="text-xs text-muted-foreground">{t("label.quickFilters")}</span>
                   <div className="flex flex-wrap gap-1.5">
-                    {quickFilterPresets.map((preset) => {
+                    {getQuickFilterPresets(t).map((preset) => {
                       const isActive = arraysEqual(viewState.statuses, preset.statuses);
                       return (
                         <button
@@ -674,7 +693,7 @@ export function IssuesList({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                   {/* Status */}
                   <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">Status</span>
+                    <span className="text-xs text-muted-foreground">{t("field.status")}</span>
                     <div className="space-y-0.5">
                       {statusOrder.map((s) => (
                         <label key={s} className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
@@ -683,7 +702,7 @@ export function IssuesList({
                             onCheckedChange={() => updateView({ statuses: toggleInArray(viewState.statuses, s) })}
                           />
                           <StatusIcon status={s} />
-                          <span className="text-sm">{statusLabel(s)}</span>
+                          <span className="text-sm">{statusLabel(s, t)}</span>
                         </label>
                       ))}
                     </div>
@@ -693,7 +712,7 @@ export function IssuesList({
                   <div className="space-y-3">
                     {/* Priority */}
                     <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground">Priority</span>
+                      <span className="text-xs text-muted-foreground">{t("field.priority")}</span>
                       <div className="space-y-0.5">
                         {priorityOrder.map((p) => (
                           <label key={p} className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
@@ -702,7 +721,7 @@ export function IssuesList({
                               onCheckedChange={() => updateView({ priorities: toggleInArray(viewState.priorities, p) })}
                             />
                             <PriorityIcon priority={p} />
-                            <span className="text-sm">{statusLabel(p)}</span>
+                            <span className="text-sm">{statusLabel(p, t)}</span>
                           </label>
                         ))}
                       </div>
@@ -710,14 +729,14 @@ export function IssuesList({
 
                     {/* Assignee */}
                     <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground">Assignee</span>
+                      <span className="text-xs text-muted-foreground">{t("field.assignee")}</span>
                       <div className="space-y-0.5 max-h-32 overflow-y-auto">
                         <label className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
                           <Checkbox
                             checked={viewState.assignees.includes("__unassigned")}
                             onCheckedChange={() => updateView({ assignees: toggleInArray(viewState.assignees, "__unassigned") })}
                           />
-                          <span className="text-sm">No assignee</span>
+                          <span className="text-sm">{t("filter.noAssignee")}</span>
                         </label>
                         {currentUserId && (
                           <label className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
@@ -726,7 +745,7 @@ export function IssuesList({
                               onCheckedChange={() => updateView({ assignees: toggleInArray(viewState.assignees, "__me") })}
                             />
                             <User className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="text-sm">Me</span>
+                            <span className="text-sm">{t("filter.me")}</span>
                           </label>
                         )}
                         {(agents ?? []).map((agent) => (
@@ -743,7 +762,7 @@ export function IssuesList({
 
                     {labels && labels.length > 0 && (
                       <div className="space-y-1">
-                        <span className="text-xs text-muted-foreground">Labels</span>
+                        <span className="text-xs text-muted-foreground">{t("field.labels")}</span>
                         <div className="space-y-0.5 max-h-32 overflow-y-auto">
                           {labels.map((label) => (
                             <label key={label.id} className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
@@ -761,7 +780,7 @@ export function IssuesList({
 
                     {projects && projects.length > 0 && (
                       <div className="space-y-1">
-                        <span className="text-xs text-muted-foreground">Project</span>
+                        <span className="text-xs text-muted-foreground">{t("field.project")}</span>
                         <div className="space-y-0.5 max-h-32 overflow-y-auto">
                           {projects.map((project) => (
                             <label key={project.id} className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">

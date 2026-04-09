@@ -91,7 +91,8 @@ function AgentRunCard({
   hasOutput: boolean;
   isActive: boolean;
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const locale = language === "zh" ? "zh-CN" : "en-US";
   return (
     <div className={cn(
       "flex h-[320px] flex-col overflow-hidden rounded-xl border shadow-sm",
@@ -114,7 +115,7 @@ function AgentRunCard({
               <Identity name={run.agentName} size="sm" className="[&>span:last-child]:!text-[11px]" />
             </div>
             <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-              <span>{isActive ? t("agent.liveNow") : run.finishedAt ? `${t("agent.finished")} ${relativeTime(run.finishedAt)}` : `${t("agent.started")} ${relativeTime(run.createdAt)}`}</span>
+              <span>{isActive ? t("agent.liveNow") : run.finishedAt ? `${t("agent.finished")} ${relativeTime(run.finishedAt, locale)}` : `${t("agent.started")} ${relativeTime(run.createdAt, locale)}`}</span>
             </div>
           </div>
 

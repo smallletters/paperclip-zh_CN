@@ -1,7 +1,25 @@
 import { cn } from "../lib/utils";
 import { statusBadge, statusBadgeDefault } from "../lib/status-colors";
+import { useLanguage } from "../context/LanguageContext";
 
 export function StatusBadge({ status }: { status: string }) {
+  const { t } = useLanguage();
+
+  // Map status values to translation keys
+  const statusKeyMap: Record<string, string> = {
+    backlog: "newIssue.backlog",
+    planned: "newIssue.planned",
+    in_progress: "newIssue.inProgress",
+    in_review: "newIssue.inReview",
+    completed: "newProject.completed",
+    done: "newIssue.done",
+    cancelled: "newIssue.cancelled",
+    blocked: "newIssue.blocked",
+  };
+
+  const translationKey = statusKeyMap[status];
+  const displayText = translationKey ? t(translationKey) : status.replace("_", " ");
+
   return (
     <span
       className={cn(
@@ -9,7 +27,7 @@ export function StatusBadge({ status }: { status: string }) {
         statusBadge[status] ?? statusBadgeDefault
       )}
     >
-      {status.replace("_", " ")}
+      {displayText}
     </span>
   );
 }
